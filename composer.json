@@ -1,0 +1,19 @@
+{
+    "name": "me/test-task",
+    "type": "project",
+    "require": {
+        "vlucas/phpdotenv": "^5.6",
+        "guzzlehttp/psr7": "^2.6",
+        "guzzlehttp/guzzle": "^7.8"
+    },
+    "autoload": {
+        "psr-4": {
+            "Me\\TestTask\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Mikhail Karpov"
+        }
+    ]
+}
