@@ -1,0 +1,12 @@
+{
+  "/get-products": {
+    "type": "array",
+    "properties": {
+      "searchTerm": { "type": "string" },
+      "count": { "type": "integer" },
+      "page": { "type": "integer" },
+      "search": { "type": "string" }
+    },
+    "required": ["searchTerm", "count", "page", "search"]
+  }
+}
