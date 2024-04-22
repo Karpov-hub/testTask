@@ -2,7 +2,6 @@
 require 'vendor/autoload.php';
 use GuzzleHttp\Client;
 use Symfony\Component\DomCrawler\Crawler;
-
 function identifyResponseType($htmlContent) {
     // Проверяем наличие уникальных элементов в HTML-коде, которые могут отличаться в разных вариантах ответа
     if (strpos($htmlContent, 'Выберите производителя:') !== false)
@@ -120,5 +119,4 @@ function searchProducts($requestBody) {
         return searchProducts(json_encode($requestData));
     }
 }
-
 ?>
