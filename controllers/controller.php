@@ -10,12 +10,20 @@ function identifyResponseType($htmlContent) {
         return 1;
 }
 function getProductDate($crawler) {
+    // Объявляем переменные $previousName, $previousArticle и $previousBrand
+    $previousName = null;
+    $previousArticle = null;
+    $previousBrand = null;
+
     // Извлекаем данные о товарах
-    $products = $crawler->filter('tr')->slice(2)->each(function (Crawler $node, $i) {
+    $products = $crawler->filter('tr')->slice(2)->each(function (Crawler $node, $i) use (&$previousName, &$previousArticle, &$previousBrand) {
         $product = [];
         // Получаем данные о товаре
-        $product['name'] = $node->filter('.name')->count() > 0 ? $node->filter('.name')->text() : 'Нет данных';
-        $product['article'] = $node->filter('.code')->count() > 0 ? $node->filter('.code')->text() : 'Нет данных';
+        $name = $node->filter('.name')->count() > 0 ? $node->filter('.name')->text() : 'Нет данных';
+        $article = $node->filter('.code')->count() > 0 ? $node->filter('.code')->text() : 'Нет данных';
+
+        $product['name'] = !empty($name) ? $name : ($previousName ?? 'Нет данных');
+        $product['article'] = !empty($article) ? $article : ($previousArticle ?? 'Нет данных');
         $product['price'] = $node->filter('.price')->count() > 0 ? $node->filter('.price')->children()->first()->text() : 'Нет данных';
         $product['count'] = $node->filter('.storehouse')->count() > 0 ? $node->filter('.storehouse')->text() : 'Нет данных';
         $product['time'] = $node->filter('.article')->count() > 0 ? $node->filter('.article')->text() : 'Нет данных';
@@ -23,7 +31,7 @@ function getProductDate($crawler) {
         $brandText = $node->filter('.producer')->text();
         $spanText = $node->filter('.producer span')->text();
         $brand = str_replace($spanText, '', $brandText);
-        $product['brand'] = !empty(trim($brand)) ? $brand : 'Нет данных';
+        $product['brand'] = !empty(trim($brand)) ? $brand : ($previousBrand ?? 'Нет данных');
 
         $product['id'] = $node->filter('.storehouse-quantity')->each(function (Crawler $quantityNode, $i) {
             // Ищем элемент input с атрибутом id, начинающимся с "g"
@@ -37,6 +45,12 @@ function getProductDate($crawler) {
             return 'Нет данных';
         });
         $product['id'] = !empty($product['id']) ? $product['id'][0] : 'Нет данных';
+
+        // Обновляем предыдущие значения для следующей итерации
+        $previousName = $product['name'];
+        $previousArticle = $product['article'];
+        $previousBrand = $product['brand'];
+
         return $product;
     });
     return $products;
