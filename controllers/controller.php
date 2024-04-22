@@ -42,7 +42,25 @@ function getProductDate($crawler) {
     });
     return $products;
 }
+function fileRecording($productDate) {
+    // Преобразуем массив данных в формат JSON
+    $jsonData = json_encode($productDate, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
+    // Путь к файлу, в который будем сохранять данные
+    $filePath = __DIR__ . '../../date/res.json';
+
+    // Записываем данные в файл
+    file_put_contents($filePath, $jsonData);
+
+    if (file_put_contents($filePath, $jsonData) === false) {
+        echo "Не удалось записать данные в файл $filePath";
+    } else {
+        echo "Данные успешно записаны в файл: $filePath";
+    }
+    
+    // Возвращаем путь к созданному файлу
+    return $filePath;
+}
 function searchProducts($requestBody) {
     // Преобразуем тело запроса из JSON в массив PHP
     $requestData = json_decode($requestBody, true);
@@ -81,8 +99,8 @@ function searchProducts($requestBody) {
 
     if ($identify) {
         // Если это страница товара, возвращаем данные о продукте
-        print_r(getProductDate($crawler));
-        return getProductDate($crawler);
+        $productDate = getProductDate($crawler);
+        fileRecording($productDate);
     } else {
         // Если это страница производителей, извлекаем название первого производителя
         $products = $crawler->filter('tr')->slice(1)->each(function (Crawler $node, $i) {
@@ -102,6 +120,5 @@ function searchProducts($requestBody) {
         return searchProducts(json_encode($requestData));
     }
 }
-
 
 ?>
