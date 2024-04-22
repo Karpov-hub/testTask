@@ -18,9 +18,13 @@ function getProductDate($crawler) {
     // Извлекаем данные о товарах
     $products = $crawler->filter('tr')->slice(2)->each(function (Crawler $node, $i) use (&$previousName, &$previousArticle, &$previousBrand) {
         $product = [];
+
         // Получаем данные о товаре
-        $name = $node->filter('.name')->count() > 0 ? $node->filter('.name')->text() : 'Нет данных';
-        $article = $node->filter('.code')->count() > 0 ? $node->filter('.code')->text() : 'Нет данных';
+        $nameNodes = $node->filter('.name');
+        $name = $nameNodes->count() > 0 ? $nameNodes->text() : 'Нет данных';
+
+        $articleNodes = $node->filter('.code');
+        $article = $articleNodes->count() > 0 ? $articleNodes->text() : 'Нет данных';
 
         $product['name'] = !empty($name) ? $name : ($previousName ?? 'Нет данных');
         $product['article'] = !empty($article) ? $article : ($previousArticle ?? 'Нет данных');
@@ -28,8 +32,10 @@ function getProductDate($crawler) {
         $product['count'] = $node->filter('.storehouse')->count() > 0 ? $node->filter('.storehouse')->text() : 'Нет данных';
         $product['time'] = $node->filter('.article')->count() > 0 ? $node->filter('.article')->text() : 'Нет данных';
 
-        $brandText = $node->filter('.producer')->text();
-        $spanText = $node->filter('.producer span')->text();
+        $brandTextNodes = $node->filter('.producer');
+        $brandText = $brandTextNodes->count() > 0 ? $brandTextNodes->text() : '';
+        $spanTextNodes = $node->filter('.producer span');
+        $spanText = $spanTextNodes->count() > 0 ? $spanTextNodes->text() : '';
         $brand = str_replace($spanText, '', $brandText);
         $product['brand'] = !empty(trim($brand)) ? $brand : ($previousBrand ?? 'Нет данных');
 
@@ -53,8 +59,10 @@ function getProductDate($crawler) {
 
         return $product;
     });
+
     return $products;
 }
+
 function fileRecording($productDate) {
     // Преобразуем массив данных в формат JSON
     $jsonData = json_encode($productDate, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
@@ -87,8 +95,8 @@ function searchProducts($requestBody) {
     // Проверка, был ли передан параметр 'brand'
     if (isset($requestData['brand'])) {
         // Добавление значения 'brand' к базовому URL
-        $baseUrl .= '/' . $requestData['searchTerm'];
-        $baseUrl .= '/' . $requestData['brand'];
+        $baseUrl .= '/' . strtolower($requestData['searchTerm']);
+        $baseUrl .= '/' . strtolower($requestData['brand']);
     }
 
     // Формирование запроса с учетом динамически сформированного URL
@@ -125,9 +133,8 @@ function searchProducts($requestBody) {
             $product['brand'] = !empty(trim($brand)) ? $brand : 'Нет данных';
             return $product;
         });
-        
         // Добавляем название производителя к параметрам запроса, приводя его к нижнему регистру
-        $requestData['brand'] = strtolower($products[0]['brand']);
+        $requestData['brand'] = $products[0]['brand'];
 
         // Вызываем функцию searchProducts() с обновленными параметрами запроса
         return searchProducts(json_encode($requestData));
